@@ -1,0 +1,14 @@
+# 照片目录 —— 不推送到 GitHub
+content/photos/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/
+.idea/
+*.swp
+
+# Logs
+*.log
