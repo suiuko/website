@@ -3,6 +3,7 @@ content/photos/
 
 # OS
 .DS_Store
+._*
 Thumbs.db
 
 # Editor
