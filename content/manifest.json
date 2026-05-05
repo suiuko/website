@@ -1,7 +1,12 @@
 {
   "notes": [
-    "hello-world.md"
+    "hello-world.md",
+    "diffusion-intuition.md",
+    "xian-biangbiang.md"
   ],
   "albums": [],
-  "projects": []
+  "projects": [
+    "sparse-attn-bench.md",
+    "this-site.md"
+  ]
 }
