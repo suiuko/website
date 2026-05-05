@@ -59,7 +59,7 @@ function DarkroomIndex({ goto }) {
                     zIndex: 10 - ci,
                   }}
                 >
-                  <div className="photo"><Placeholder label={c.frames[0]?.meta || c.title} ratio="1/1" seed={c.coverSeed * 7} /></div>
+                  <div className="photo"><Placeholder label={c.frames[0]?.meta || c.title} ratio="1/1" seed={c.coverSeed * 7} src={c.frames[0]?.thumb || c.frames[0]?.src} /></div>
                   <div className="caption">{c.title}</div>
                   <div className="date">{c.when}</div>
                 </div>
@@ -96,13 +96,13 @@ function MonthDetail({ monthId, goto }) {
           <div key={c.id} className="album-card" onClick={() => goto('photos', monthId + '/' + c.id)}>
             <div className="album-stack">
               <div className="polaroid-mini p3" style={{ transform: `rotate(${-6 + i}deg)` }}>
-                <div className="photo"><Placeholder label={c.frames[2]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3 + 2} /></div>
+                <div className="photo"><Placeholder label={c.frames[2]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3 + 2} src={c.frames[2]?.thumb || c.frames[2]?.src} /></div>
               </div>
               <div className="polaroid-mini p2" style={{ transform: `rotate(${3 - i * 0.3}deg)` }}>
-                <div className="photo"><Placeholder label={c.frames[1]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3 + 1} /></div>
+                <div className="photo"><Placeholder label={c.frames[1]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3 + 1} src={c.frames[1]?.thumb || c.frames[1]?.src} /></div>
               </div>
               <div className="polaroid-mini p1" style={{ transform: `rotate(${-1 + i * 0.2}deg)` }}>
-                <div className="photo"><Placeholder label={c.frames[0]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3} /></div>
+                <div className="photo"><Placeholder label={c.frames[0]?.meta || ''} ratio="1/1" seed={c.coverSeed * 3} src={c.frames[0]?.thumb || c.frames[0]?.src} /></div>
                 <div className="caption">{c.frames[0]?.cap || ''}</div>
                 <div className="date">{c.when}</div>
               </div>
@@ -201,7 +201,7 @@ function AlbumDetail({ albumId, goto }) {
             onClick={() => { setLightbox(f); setLightboxIdx(i); }}
           >
             {i % 3 === 0 && <div className="tape" />}
-            <div className="photo"><Placeholder label={f.meta} ratio="1/1" seed={album.coverSeed * 10 + i} /></div>
+            <div className="photo"><Placeholder label={f.meta} ratio="1/1" seed={album.coverSeed * 10 + i} src={f.thumb || f.src} /></div>
             <div className="caption">{f.cap}</div>
             <div className="date">{album.when}.{f.date.split('.')[1] || '01'}</div>
           </div>
@@ -213,7 +213,7 @@ function AlbumDetail({ albumId, goto }) {
           <div className="lightbox-inner" onClick={e => e.stopPropagation()}>
             <div className="polaroid">
               <div className="photo" style={{ aspectRatio: '3/4' }}>
-                <Placeholder label={lightbox.meta} ratio="3/4" seed={album.coverSeed * 10 + lightboxIdx} />
+                <Placeholder label={lightbox.meta} ratio="3/4" seed={album.coverSeed * 10 + lightboxIdx} src={lightbox.src || lightbox.thumb} />
               </div>
               <div className="caption">{lightbox.cap}</div>
               <div className="date">{album.when}.{lightbox.date.split('.')[1] || '01'} · {album.title}</div>

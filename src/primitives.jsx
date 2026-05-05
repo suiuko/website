@@ -102,10 +102,41 @@ function TOC({ headings, activeId }) {
   );
 }
 
-// Placeholder — subtle diagonal-stripe swatch for "where an image would be"
-function Placeholder({ label, ratio = '4/3', seed = 1 }) {
+// Placeholder — shows a real image if `src` is provided, otherwise a subtle striped swatch
+// On image error, transparently falls back to the swatch — so a broken NAS link won't kill the layout.
+function Placeholder({ label, ratio = '4/3', seed = 1, src = null, alt = '' }) {
+  const [errored, setErrored] = useState(false);
+  const showImg = src && !errored;
+
   const hues = [50, 60, 40, 70, 80, 45, 55];
   const h = hues[seed % hues.length];
+
+  if (showImg) {
+    return (
+      <div
+        className="ph"
+        style={{
+          aspectRatio: ratio,
+          position: 'relative', overflow: 'hidden',
+          border: '1px solid var(--rule)',
+          background: 'oklch(0.18 0.01 60)',
+        }}
+      >
+        <img
+          src={src}
+          alt={alt || label || ''}
+          loading="lazy"
+          onError={() => setErrored(true)}
+          style={{
+            position: 'absolute', inset: 0,
+            width: '100%', height: '100%',
+            objectFit: 'cover', display: 'block',
+          }}
+        />
+      </div>
+    );
+  }
+
   return (
     <div
       className="ph"

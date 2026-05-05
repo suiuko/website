@@ -1,0 +1,571 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Photo Manager — Site Image Audit</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=EB+Garamond:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(0.16 0.01 60);
+    --panel: oklch(0.20 0.01 60);
+    --panel-2: oklch(0.23 0.01 60);
+    --ink: oklch(0.92 0.02 85);
+    --ink-2: oklch(0.72 0.02 85);
+    --ink-3: oklch(0.55 0.02 85);
+    --rule: oklch(0.30 0.01 60);
+    --amber: oklch(0.78 0.13 70);
+    --green: oklch(0.72 0.14 145);
+    --red: oklch(0.68 0.18 25);
+    --blue: oklch(0.72 0.10 240);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; }
+  body { padding: 24px 32px 80px; max-width: 1500px; margin: 0 auto; }
+  h1 { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 32px;
+    margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--ink-3); font-size: 12px; margin-bottom: 24px; }
+
+  .toolbar { display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap;
+    padding: 14px; background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; align-items: center; }
+  .toolbar input[type=file] { display: none; }
+  button, .btn-label { background: var(--panel-2); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 8px 14px; font: inherit; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s; display: inline-block; }
+  button:hover, .btn-label:hover { border-color: var(--amber); color: var(--amber); }
+  button.primary { background: var(--amber); color: oklch(0.18 0.02 70);
+    border-color: var(--amber); font-weight: 500; }
+  button.danger { color: var(--red); border-color: var(--red); }
+
+  .stats { display: flex; gap: 16px; margin-bottom: 20px; flex-wrap: wrap; }
+  .stat { background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 12px 16px; min-width: 120px; }
+  .stat .num { font-size: 24px; color: var(--amber); font-weight: 500;
+    font-family: 'EB Garamond', serif; }
+  .stat .lbl { font-size: 10px; color: var(--ink-3); text-transform: uppercase;
+    letter-spacing: 0.1em; margin-top: 2px; }
+  .stat.green .num { color: var(--green); }
+  .stat.red .num { color: var(--red); }
+  .stat.blue .num { color: var(--blue); }
+
+  .filters { display: flex; gap: 6px; margin-bottom: 16px; flex-wrap: wrap; }
+  .filter-btn { font-size: 11px; padding: 5px 10px; }
+  .filter-btn.active { background: var(--amber); color: oklch(0.18 0.02 70);
+    border-color: var(--amber); }
+
+  .group { margin-bottom: 32px; }
+  .group h2 { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 22px;
+    margin: 0 0 4px; color: var(--ink); }
+  .group .meta { font-size: 11px; color: var(--ink-3); margin-bottom: 12px; }
+
+  .grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+    gap: 12px; }
+
+  .card { background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; overflow: hidden; cursor: pointer; transition: all 0.15s;
+    position: relative; }
+  .card:hover { border-color: var(--amber); transform: translateY(-1px); }
+  .card .img-wrap { aspect-ratio: 1/1; background: oklch(0.10 0.01 60);
+    position: relative; overflow: hidden; display: flex;
+    align-items: center; justify-content: center; }
+  .card .img-wrap img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .card .img-wrap .placeholder { color: var(--ink-3); font-size: 11px; }
+  .card .info { padding: 8px 10px; }
+  .card .cap { font-size: 12px; color: var(--ink); white-space: nowrap;
+    overflow: hidden; text-overflow: ellipsis; }
+  .card .meta-line { font-size: 10px; color: var(--ink-3); margin-top: 2px;
+    white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .card .badges { position: absolute; top: 4px; left: 4px; display: flex; gap: 3px;
+    flex-direction: column; }
+  .card .b { font-size: 9px; padding: 2px 5px; border-radius: 2px;
+    text-transform: uppercase; letter-spacing: 0.05em; font-weight: 500; }
+  .card .b.ok { background: var(--green); color: oklch(0.15 0.05 145); }
+  .card .b.err { background: var(--red); color: oklch(0.95 0.02 25); }
+  .card .b.flag { background: var(--amber); color: oklch(0.18 0.02 70); }
+  .card.flagged { border-color: var(--amber); border-width: 2px; }
+  .card.broken { border-color: var(--red); }
+
+  .modal-bg { position: fixed; inset: 0; background: oklch(0 0 0 / 0.8); z-index: 100;
+    display: flex; align-items: center; justify-content: center; padding: 40px; }
+  .modal { background: var(--panel); border: 1px solid var(--rule); border-radius: 6px;
+    max-width: 700px; width: 100%; max-height: 90vh; overflow: auto; }
+  .modal-img { background: oklch(0.10 0.01 60); padding: 20px;
+    display: flex; align-items: center; justify-content: center; }
+  .modal-img img { max-width: 100%; max-height: 60vh; object-fit: contain; }
+  .modal-body { padding: 20px; }
+  .modal-body h3 { margin: 0 0 12px; font-family: 'EB Garamond', serif; font-weight: 500; }
+  .modal-body dl { display: grid; grid-template-columns: 100px 1fr; gap: 6px 12px;
+    font-size: 12px; margin: 0 0 16px; }
+  .modal-body dt { color: var(--ink-3); }
+  .modal-body dd { margin: 0; word-break: break-all; }
+  .modal-body dd code { background: var(--bg); padding: 2px 5px; border-radius: 2px; }
+  .modal-body textarea { width: 100%; background: var(--bg); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px; padding: 8px;
+    font: inherit; font-family: 'JetBrains Mono', monospace; resize: vertical; min-height: 60px; }
+  .modal-actions { display: flex; gap: 8px; margin-top: 12px; flex-wrap: wrap; }
+
+  .hint { background: oklch(0.22 0.04 70 / 0.3); border-left: 2px solid var(--amber);
+    padding: 10px 14px; margin: 12px 0; font-size: 12px; color: var(--ink-2);
+    line-height: 1.6; border-radius: 0 3px 3px 0; }
+  .hint strong { color: var(--amber); font-weight: 500; }
+  .hint code { background: var(--bg); padding: 1px 5px; border-radius: 2px; }
+
+  .empty-state { text-align: center; padding: 60px 20px; color: var(--ink-3);
+    border: 1px dashed var(--rule); border-radius: 4px; }
+
+  .diff-panel { background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 16px; margin-top: 16px; }
+  .diff-panel h3 { font-family: 'EB Garamond', serif; font-weight: 500;
+    margin: 0 0 8px; }
+  .diff-panel textarea { width: 100%; min-height: 100px; background: var(--bg);
+    color: var(--ink); border: 1px solid var(--rule); border-radius: 3px;
+    padding: 8px; font: inherit; font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; resize: vertical; }
+  .diff-result { margin-top: 12px; }
+  .diff-result h4 { font-size: 12px; color: var(--ink-3); margin: 12px 0 4px;
+    text-transform: uppercase; letter-spacing: 0.1em; }
+  .diff-list { background: var(--bg); border: 1px solid var(--rule);
+    border-radius: 3px; padding: 8px; max-height: 300px; overflow: auto;
+    font-size: 11px; }
+  .diff-list li { list-style: none; padding: 2px 0; word-break: break-all; }
+  .diff-list .url-orphan { color: var(--amber); }
+  .diff-list .url-missing { color: var(--red); }
+  ul { margin: 0; padding: 0; }
+
+  ::selection { background: var(--amber); color: oklch(0.18 0.02 70); }
+</style>
+</head>
+<body>
+
+<h1>photo-manager <span style="color:var(--amber)">·</span> audit & cleanup</h1>
+<p class="sub">scan <code>src/data.jsx</code> · verify every image still loads · flag suspicious ones · find orphans on NAS</p>
+
+<div class="toolbar">
+  <label class="btn-label">
+    📂 load src/data.jsx
+    <input type="file" id="loadDataJsx" accept=".jsx,.js,.txt">
+  </label>
+  <button onclick="loadFromUrl()">🌐 fetch from web.mellowing.uk</button>
+  <button onclick="recheckAll()" class="primary">🔄 re-verify all images</button>
+  <button onclick="exportFlagged()">📋 export flagged list</button>
+  <button onclick="clearFlags()" class="danger">clear flags</button>
+  <span style="margin-left:auto;font-size:11px;color:var(--ink-3)" id="loadStatus">no data loaded</span>
+</div>
+
+<div class="stats" id="stats" style="display:none">
+  <div class="stat"><div class="num" id="stTotal">0</div><div class="lbl">total in code</div></div>
+  <div class="stat green"><div class="num" id="stOk">0</div><div class="lbl">loaded ok</div></div>
+  <div class="stat red"><div class="num" id="stErr">0</div><div class="lbl">broken / 404</div></div>
+  <div class="stat blue"><div class="num" id="stPending">0</div><div class="lbl">checking</div></div>
+  <div class="stat"><div class="num" id="stFlagged">0</div><div class="lbl">flagged</div></div>
+</div>
+
+<div class="filters" id="filters" style="display:none">
+  <button class="filter-btn active" data-filter="all">all</button>
+  <button class="filter-btn" data-filter="ok">✓ ok</button>
+  <button class="filter-btn" data-filter="err">✕ broken</button>
+  <button class="filter-btn" data-filter="flagged">⚑ flagged</button>
+  <button class="filter-btn" data-filter="missing-src">no src (placeholder)</button>
+</div>
+
+<div id="content">
+  <div class="empty-state">
+    <strong>start here →</strong> click <em>"📂 load src/data.jsx"</em> and pick the file from your project<br>
+    or click <em>"🌐 fetch from web.mellowing.uk"</em> to pull the live version
+  </div>
+</div>
+
+<div class="diff-panel" id="diffPanel" style="display:none">
+  <h3>🔍 find orphan images on NAS</h3>
+  <p style="color:var(--ink-2);font-size:12px;margin:0 0 8px">
+    paste the list of <strong>all images on your Chevereto</strong> (one URL per line, or paste any messy blob —
+    we extract URLs). the tool will show:
+  </p>
+  <ul style="color:var(--ink-2);font-size:11px;margin:0 0 12px;padding-left:20px">
+    <li><span style="color:var(--amber)">orphans</span> — on NAS but not used in site (candidates to delete)</li>
+    <li><span style="color:var(--red)">missing</span> — used in site but not on NAS (broken)</li>
+  </ul>
+  <textarea id="naasList" placeholder="http://www.zgjnas.top:8111/images/2026/05/02/agy6.jpg
+http://www.zgjnas.top:8111/images/2026/05/02/agy7.jpg
+..."></textarea>
+  <div style="margin-top: 8px">
+    <button onclick="runDiff()" class="primary">→ diff</button>
+  </div>
+  <div class="diff-result" id="diffResult"></div>
+</div>
+
+<!-- Modal for image detail -->
+<div class="modal-bg" id="modal" style="display:none" onclick="closeModal(event)">
+  <div class="modal" onclick="event.stopPropagation()">
+    <div class="modal-img"><img id="modalImg" src="" alt=""></div>
+    <div class="modal-body">
+      <h3 id="modalTitle"></h3>
+      <dl>
+        <dt>album</dt><dd id="modalAlbum"></dd>
+        <dt>caption</dt><dd id="modalCap"></dd>
+        <dt>date</dt><dd id="modalDate"></dd>
+        <dt>camera</dt><dd id="modalMeta"></dd>
+        <dt>src URL</dt><dd><code id="modalUrl"></code></dd>
+        <dt>thumb URL</dt><dd><code id="modalThumb"></code></dd>
+        <dt>status</dt><dd id="modalStatus"></dd>
+      </dl>
+      <label style="font-size:11px;color:var(--ink-3);text-transform:uppercase;letter-spacing:0.1em">flag note (optional)</label>
+      <textarea id="modalNote" placeholder="why is this flagged? (e.g. 'wrong photo, replace with shot 5', 'duplicate of agy7')"></textarea>
+      <div class="modal-actions">
+        <button onclick="toggleFlag()" id="flagBtn" class="primary">⚑ flag for review</button>
+        <button onclick="copyDelCmd()">📋 copy as deletion candidate</button>
+        <button onclick="window.open(modalState.url, '_blank')">↗ open in chevereto</button>
+        <button onclick="closeModal()" style="margin-left:auto">close</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+let frames = [];        // [{ albumId, monthLabel, cityTitle, cap, date, meta, src, thumb, status, flagged, note }]
+let currentFilter = 'all';
+let modalState = { idx: -1, url: '' };
+
+const $ = id => document.getElementById(id);
+
+// ——— load src/data.jsx and parse out frames ———
+
+$('loadDataJsx').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => parseDataJsx(reader.result, f.name);
+  reader.readAsText(f);
+});
+
+async function loadFromUrl() {
+  const url = prompt('Fetch data.jsx from:', 'http://web.mellowing.uk/src/data.jsx');
+  if (!url) return;
+  try {
+    const r = await fetch(url);
+    if (!r.ok) throw new Error('HTTP ' + r.status);
+    const txt = await r.text();
+    parseDataJsx(txt, url);
+  } catch (e) {
+    alert('Fetch failed: ' + e.message + '\n\nTip: open this HTML on the same domain, or load the file locally.');
+  }
+}
+
+function parseDataJsx(src, sourceName) {
+  // Find the MONTHS array in the source. We look for `const MONTHS = [` ... `];`
+  // and then eval-parse it in a sandboxed way.
+  const m = src.match(/const\s+MONTHS\s*=\s*(\[[\s\S]*?\n\];)/);
+  if (!m) {
+    alert('Could not find `const MONTHS = [...]` in the file. Make sure you loaded src/data.jsx.');
+    return;
+  }
+  let months;
+  try {
+    // eslint-disable-next-line no-new-func
+    months = (new Function('return ' + m[1].replace(/;\s*$/, '')))();
+  } catch (e) {
+    alert('Parse error: ' + e.message);
+    return;
+  }
+
+  // Restore previously saved flags from localStorage
+  const savedFlags = JSON.parse(localStorage.getItem('photo-manager-flags') || '{}');
+
+  frames = [];
+  for (const month of months) {
+    for (const city of month.cities || []) {
+      (city.frames || []).forEach((f, i) => {
+        const key = `${city.id}#${i}`;
+        frames.push({
+          key,
+          albumId: city.id,
+          monthId: month.id,
+          monthLabel: month.label,
+          cityTitle: city.title,
+          cityName: city.title + (city.sub ? ` · ${city.sub}` : ''),
+          cap: f.cap || '',
+          date: f.date || '',
+          meta: f.meta || '',
+          src: f.src || '',
+          thumb: f.thumb || '',
+          status: f.src ? 'pending' : 'no-src',
+          flagged: !!savedFlags[key]?.flagged,
+          note: savedFlags[key]?.note || '',
+        });
+      });
+    }
+  }
+
+  $('loadStatus').textContent = `loaded ${frames.length} frames from ${sourceName}`;
+  $('stats').style.display = 'flex';
+  $('filters').style.display = 'flex';
+  $('diffPanel').style.display = 'block';
+  render();
+  setTimeout(verifyAll, 100);
+}
+
+// ——— verify each image loads ———
+
+function verifyAll() {
+  for (const f of frames) {
+    if (!f.src) { f.status = 'no-src'; continue; }
+    f.status = 'pending';
+    const img = new Image();
+    const url = f.thumb || f.src;
+    img.onload = () => { f.status = 'ok'; updateCard(f); updateStats(); };
+    img.onerror = () => { f.status = 'err'; updateCard(f); updateStats(); };
+    img.src = url;
+  }
+  updateStats();
+}
+
+function recheckAll() {
+  if (frames.length === 0) { alert('load data first'); return; }
+  verifyAll();
+}
+
+// ——— render ———
+
+function render() {
+  // Group by month + city
+  const groups = {};
+  for (const f of frames) {
+    const k = f.monthId + '|' + f.albumId;
+    if (!groups[k]) groups[k] = { monthLabel: f.monthLabel, cityName: f.cityName, frames: [] };
+    groups[k].frames.push(f);
+  }
+
+  const filtered = (gframes) => gframes.filter(f => {
+    if (currentFilter === 'all') return true;
+    if (currentFilter === 'ok') return f.status === 'ok';
+    if (currentFilter === 'err') return f.status === 'err';
+    if (currentFilter === 'flagged') return f.flagged;
+    if (currentFilter === 'missing-src') return f.status === 'no-src';
+    return true;
+  });
+
+  const html = Object.values(groups).map(g => {
+    const fr = filtered(g.frames);
+    if (fr.length === 0) return '';
+    return `
+      <div class="group">
+        <h2>${esc(g.cityName)}</h2>
+        <div class="meta">${esc(g.monthLabel)} · ${fr.length} of ${g.frames.length} frames</div>
+        <div class="grid">
+          ${fr.map(f => cardHtml(f)).join('')}
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  $('content').innerHTML = html || '<div class="empty-state">no frames match the current filter</div>';
+  updateStats();
+}
+
+function cardHtml(f) {
+  const idx = frames.indexOf(f);
+  const cls = ['card'];
+  if (f.flagged) cls.push('flagged');
+  if (f.status === 'err') cls.push('broken');
+  return `
+    <div class="${cls.join(' ')}" onclick="openModal(${idx})">
+      <div class="img-wrap" data-idx="${idx}">
+        ${f.src
+          ? `<img src="${esc(f.thumb || f.src)}" loading="lazy" onerror="this.style.display='none';this.parentNode.innerHTML+='<span class=\\'placeholder\\'>404</span>'">`
+          : `<span class="placeholder">no src</span>`}
+        <div class="badges">
+          ${f.status === 'ok' ? '<span class="b ok">✓</span>' : ''}
+          ${f.status === 'err' ? '<span class="b err">✕</span>' : ''}
+          ${f.flagged ? '<span class="b flag">⚑</span>' : ''}
+        </div>
+      </div>
+      <div class="info">
+        <div class="cap">${esc(f.cap || '(no caption)')}</div>
+        <div class="meta-line">${esc(f.date)} · ${esc(f.meta || '')}</div>
+      </div>
+    </div>
+  `;
+}
+
+function updateCard(f) {
+  // refresh just the badges of one card by re-rendering
+  render();
+}
+
+function updateStats() {
+  let ok = 0, err = 0, pending = 0, flagged = 0;
+  for (const f of frames) {
+    if (f.status === 'ok') ok++;
+    else if (f.status === 'err') err++;
+    else if (f.status === 'pending') pending++;
+    if (f.flagged) flagged++;
+  }
+  $('stTotal').textContent = frames.length;
+  $('stOk').textContent = ok;
+  $('stErr').textContent = err;
+  $('stPending').textContent = pending;
+  $('stFlagged').textContent = flagged;
+}
+
+// ——— filters ———
+
+document.querySelectorAll('.filter-btn').forEach(b => {
+  b.addEventListener('click', () => {
+    document.querySelectorAll('.filter-btn').forEach(x => x.classList.remove('active'));
+    b.classList.add('active');
+    currentFilter = b.dataset.filter;
+    render();
+  });
+});
+
+// ——— modal ———
+
+function openModal(idx) {
+  const f = frames[idx];
+  modalState = { idx, url: f.src };
+  $('modalImg').src = f.src || '';
+  $('modalImg').style.display = f.src ? 'block' : 'none';
+  $('modalTitle').textContent = f.cap || '(no caption)';
+  $('modalAlbum').textContent = `${f.cityName} (${f.monthLabel})`;
+  $('modalCap').textContent = f.cap;
+  $('modalDate').textContent = f.date;
+  $('modalMeta').textContent = f.meta;
+  $('modalUrl').textContent = f.src || '(none)';
+  $('modalThumb').textContent = f.thumb || '(none)';
+  $('modalStatus').innerHTML = ({
+    'ok': '<span style="color:var(--green)">✓ loads ok</span>',
+    'err': '<span style="color:var(--red)">✕ broken (404 or unreachable)</span>',
+    'pending': '<span style="color:var(--blue)">checking…</span>',
+    'no-src': '<span style="color:var(--ink-3)">no src URL set</span>',
+  })[f.status] || '?';
+  $('modalNote').value = f.note || '';
+  $('flagBtn').textContent = f.flagged ? '⚑ unflag' : '⚑ flag for review';
+  $('modal').style.display = 'flex';
+}
+
+function closeModal(e) {
+  if (e && e.target.closest('.modal') && !e.target.closest('.modal-actions button')) return;
+  // save current note before closing
+  if (modalState.idx >= 0) {
+    frames[modalState.idx].note = $('modalNote').value;
+    saveFlags();
+  }
+  $('modal').style.display = 'none';
+  modalState.idx = -1;
+}
+
+function toggleFlag() {
+  const f = frames[modalState.idx];
+  f.flagged = !f.flagged;
+  f.note = $('modalNote').value;
+  $('flagBtn').textContent = f.flagged ? '⚑ unflag' : '⚑ flag for review';
+  saveFlags();
+  render();
+}
+
+function copyDelCmd() {
+  const f = frames[modalState.idx];
+  navigator.clipboard.writeText(f.src);
+  const btn = event.target;
+  const orig = btn.textContent;
+  btn.textContent = '✓ url copied';
+  setTimeout(() => btn.textContent = orig, 1200);
+}
+
+// ——— flag persistence ———
+
+function saveFlags() {
+  const flags = {};
+  for (const f of frames) {
+    if (f.flagged || f.note) flags[f.key] = { flagged: f.flagged, note: f.note };
+  }
+  localStorage.setItem('photo-manager-flags', JSON.stringify(flags));
+}
+
+function clearFlags() {
+  if (!confirm('clear all flags and notes?')) return;
+  for (const f of frames) { f.flagged = false; f.note = ''; }
+  saveFlags();
+  render();
+}
+
+function exportFlagged() {
+  const flagged = frames.filter(f => f.flagged);
+  if (flagged.length === 0) { alert('nothing flagged yet'); return; }
+
+  let report = '# Flagged photos for review\n\n';
+  report += `Total flagged: ${flagged.length}\n\n`;
+  report += '| # | album | caption | url | note |\n|---|---|---|---|---|\n';
+  flagged.forEach((f, i) => {
+    report += `| ${i+1} | ${f.cityName} | ${f.cap} | \`${f.src}\` | ${f.note} |\n`;
+  });
+  report += '\n## Direct URLs to delete (one per line):\n\n```\n';
+  flagged.forEach(f => report += f.src + '\n');
+  report += '```\n';
+
+  const blob = new Blob([report], { type: 'text/markdown' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `flagged-photos-${new Date().toISOString().slice(0,10)}.md`;
+  a.click();
+}
+
+// ——— diff against NAS list ———
+
+function runDiff() {
+  const blob = $('naasList').value;
+  if (!blob.trim()) { alert('paste a list of NAS image URLs first'); return; }
+
+  const urlRe = /https?:\/\/[^\s"'<>\]\)\}]+\.(?:jpg|jpeg|png|gif|webp|bmp)/gi;
+  const nasUrls = [...new Set(blob.match(urlRe) || [])];
+
+  // Strip Chevereto thumbnail variants for comparison
+  const norm = u => u.replace(/\.(?:md|th)\.([a-z]+)$/i, '.$1');
+  const nasSet = new Set(nasUrls.map(norm));
+
+  const siteUrls = frames.filter(f => f.src).map(f => norm(f.src));
+  const siteSet = new Set(siteUrls);
+
+  const orphans = [...nasSet].filter(u => !siteSet.has(u));
+  const missing = [...siteSet].filter(u => !nasSet.has(u));
+
+  let html = '';
+  html += `<h4>orphans on NAS · ${orphans.length} <span style="color:var(--ink-3);font-weight:400">(uploaded but unused — candidates to delete)</span></h4>`;
+  if (orphans.length === 0) {
+    html += '<div style="color:var(--ink-3);font-size:11px;padding:8px">none — every NAS image is used in the site ✓</div>';
+  } else {
+    html += '<ul class="diff-list">' + orphans.map(u => `<li class="url-orphan">${esc(u)}</li>`).join('') + '</ul>';
+    html += `<button onclick="copyOrphans(${JSON.stringify(orphans).replace(/"/g,'&quot;')})" style="margin-top:6px">📋 copy ${orphans.length} URLs</button>`;
+  }
+  html += `<h4>missing on NAS · ${missing.length} <span style="color:var(--ink-3);font-weight:400">(used in site but not in your list — broken)</span></h4>`;
+  if (missing.length === 0) {
+    html += '<div style="color:var(--ink-3);font-size:11px;padding:8px">none — every site image is on NAS ✓</div>';
+  } else {
+    html += '<ul class="diff-list">' + missing.map(u => `<li class="url-missing">${esc(u)}</li>`).join('') + '</ul>';
+  }
+
+  $('diffResult').innerHTML = html;
+}
+
+function copyOrphans(urls) {
+  navigator.clipboard.writeText(urls.join('\n'));
+  alert(`✓ ${urls.length} URLs copied. paste into Chevereto's bulk-delete page.`);
+}
+
+// ——— utils ———
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+// keyboard
+document.addEventListener('keydown', e => {
+  if (e.key === 'Escape' && $('modal').style.display !== 'none') closeModal();
+});
+</script>
+
+</body>
+</html>

@@ -20,19 +20,22 @@ function Home({ goto }) {
     <div>
       <div className="hero">
         <div className="hero-img">
-          <Placeholder label="cover photo · replace in /public/cover.jpg" ratio="4/3" seed={3} />
+          <img
+            src="http://www.zgjnas.top:8111/images/2026/05/02/aVZN.jpg"
+            alt="cover"
+            style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', aspectRatio: '4/3' }}
+          />
         </div>
         <div className="hero-meta">
           <div>
             <p className="page-sub">~$ {typed}<span className="cursor" /></p>
             <h1 className="page-title" style={{ marginTop: 12 }}>
               Gaojing <em>Zhang</em>
-              <span style={{ display: 'block', fontSize: '0.35em', fontFamily: "'Noto Serif SC', serif", color: 'var(--ink-3)', marginTop: 6, letterSpacing: '0.08em' }}>张高靖</span>
             </h1>
             <p className="hero-bio" style={{ marginTop: 18 }}>
-              PhD student thinking about <em>learning from limited signal</em> — diffusion, RL, and the places they meet.
-              <br/><br/>
-              在 Cambridge 读博，业余写 notes、冲咖啡、用胶片相机拍一些没有用但我很喜欢的东西。
+              Doctor of Engineering, University of Sussex.
+              <br/>
+              Robot, embodied intelligence.
             </p>
           </div>
           <div className="stat-grid">
@@ -72,7 +75,16 @@ function Home({ goto }) {
           {window.PHOTOS.slice(0, 4).map((p, i) => (
             <div key={p.id} className="polaroid" style={{ position: 'relative', width: 'auto', transform: `rotate(${(i % 2 ? 1 : -1) * (1 + i * 0.5)}deg)` }}>
               <div className="photo">
-                <Placeholder label={p.label} ratio="1/1" seed={p.id * 3} />
+                {(p.thumb || p.src) ? (
+                  <img
+                    src={p.thumb || p.src}
+                    alt={p.caption}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover', display: 'block', aspectRatio: '1/1' }}
+                    loading="lazy"
+                  />
+                ) : (
+                  <Placeholder label={p.label} ratio="1/1" seed={p.id * 3} />
+                )}
               </div>
               <div className="caption">{p.caption}</div>
               <div className="date">{p.date} · {p.loc}</div>
@@ -88,10 +100,8 @@ function Home({ goto }) {
         </div>
         <div className="card" style={{ fontFamily: "'EB Garamond', 'Noto Serif SC', serif", fontSize: 19, lineHeight: 1.65 }}>
           <p style={{ margin: 0 }}>
-            <span style={{ color: 'var(--amber)' }}>·</span> 在写 NeurIPS submission (deadline 5月) <br/>
-            <span style={{ color: 'var(--amber)' }}>·</span> 在读 <em>Gödel, Escher, Bach</em>（第三次）<br/>
-            <span style={{ color: 'var(--amber)' }}>·</span> 在重学 Rust；写了一个 tiny toy renderer<br/>
-            <span style={{ color: 'var(--amber)' }}>·</span> 刚从东京回来，下次想去 Porto
+            <span style={{ color: 'var(--amber)' }}>·</span> 跟进 VLN 项目<br/>
+            <span style={{ color: 'var(--amber)' }}>·</span> 六月回国
           </p>
           <p style={{ margin: '16px 0 0', fontSize: 12, color: 'var(--ink-3)', fontFamily: "'JetBrains Mono', monospace", letterSpacing: '0.06em' }}>
             last updated {window.ABOUT.tz} · 2026-04-18

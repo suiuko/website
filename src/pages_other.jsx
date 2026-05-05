@@ -56,8 +56,8 @@ function About() {
       <div className="about-grid">
         <div className="about-prose">
           <p>
-            我是 <strong>Gaojing Zhang (张高靖)</strong>，在 Cambridge 读 ML 方向的 PhD。主要关心怎么让模型在
-            <em> 信号稀缺 </em>的情况下学得更好——diffusion、RL、self-supervised 的交叉地带。
+            我是 <strong>Gaojing Zhang (张高靖)</strong>，University of Sussex 工学博士。
+            研究方向是<em> 机器人与具身智能 </em>。
           </p>
           <p>
             生活里是另一个人：用胶片拍一些没用的瞬间、手冲咖啡、写一点自己的小工具。
@@ -79,24 +79,13 @@ function About() {
               <dt>role</dt>     <dd>{a.role}</dd>
               <dt>where</dt>    <dd>{a.where}</dd>
               <dt>tz</dt>       <dd>{a.tz}</dd>
-              <dt>email</dt>    <dd><a href={'mailto:' + a.email}>{a.email}</a></dd>
-              <dt>github</dt>   <dd><a href="#">{a.github}</a></dd>
-              <dt>scholar</dt>  <dd><a href="#">{a.scholar}</a></dd>
+              <dt>email</dt>    <dd>{a.email}</dd>
+              <dt>github</dt>   <dd><a href={'https://' + a.github} target="_blank" rel="noopener">{a.github}</a></dd>
+              <dt>scholar</dt>  <dd><a href={a.scholar} target="_blank" rel="noopener">scholar.google.com/…</a></dd>
               <dt>rss</dt>      <dd><a href="#">{a.rss}</a></dd>
               <dt>pgp</dt>      <dd><code style={{ fontSize: 12 }}>{a.pgp}</code></dd>
               <dt>status</dt>   <dd style={{ color: 'var(--amber)' }}>{a.status}</dd>
             </dl>
-          </div>
-
-          <div className="card" style={{ marginTop: 16 }}>
-            <h4 style={{ margin: '0 0 10px', fontSize: 11, letterSpacing: '0.15em', textTransform: 'uppercase', color: 'var(--ink-3)' }}>— colophon</h4>
-            <p style={{ margin: 0, fontSize: 13, color: 'var(--ink-2)', lineHeight: 1.6 }}>
-              Type: <strong>EB Garamond</strong> & <strong>JetBrains Mono</strong>.<br/>
-              Handwriting: <span className="hand" style={{ fontSize: 18 }}>Caveat</span>.<br/>
-              Colors: warm-dark, hand-picked in OKLCH.<br/>
-              Stack: just HTML + React + CSS. No build.<br/>
-              Host: a tiny Linux box somewhere in Frankfurt.
-            </p>
           </div>
         </div>
       </div>

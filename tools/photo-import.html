@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="utf-8">
+<title>Photo Import — NAS → data.jsx</title>
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=EB+Garamond:wght@400;500&family=Noto+Sans+SC:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: oklch(0.16 0.01 60);
+    --panel: oklch(0.20 0.01 60);
+    --panel-2: oklch(0.23 0.01 60);
+    --ink: oklch(0.92 0.02 85);
+    --ink-2: oklch(0.72 0.02 85);
+    --ink-3: oklch(0.55 0.02 85);
+    --rule: oklch(0.30 0.01 60);
+    --amber: oklch(0.78 0.13 70);
+    --green: oklch(0.72 0.14 145);
+    --red: oklch(0.68 0.18 25);
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; background: var(--bg); color: var(--ink);
+    font-family: 'JetBrains Mono', monospace; font-size: 13px; line-height: 1.5; }
+  body { padding: 24px 32px 80px; max-width: 1400px; margin: 0 auto; }
+  h1 { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 32px;
+    margin: 0 0 4px; letter-spacing: -0.01em; }
+  .sub { color: var(--ink-3); font-size: 12px; margin-bottom: 32px; }
+  .sub em { color: var(--amber); font-style: normal; }
+
+  .grid { display: grid; grid-template-columns: 380px 1fr; gap: 24px; align-items: start; }
+
+  .panel { background: var(--panel); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 18px; }
+  .panel h2 { font-family: 'EB Garamond', serif; font-weight: 500; font-size: 18px;
+    margin: 0 0 12px; color: var(--ink); letter-spacing: 0; }
+  .panel + .panel { margin-top: 16px; }
+
+  label { display: block; font-size: 11px; color: var(--ink-3);
+    text-transform: uppercase; letter-spacing: 0.1em; margin: 14px 0 4px; }
+  label:first-child { margin-top: 0; }
+
+  input, textarea, select {
+    width: 100%; background: var(--bg); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 8px 10px; font: inherit; font-family: 'JetBrains Mono', monospace;
+  }
+  input:focus, textarea:focus, select:focus {
+    outline: none; border-color: var(--amber); }
+  textarea { resize: vertical; min-height: 80px; }
+
+  .row { display: flex; gap: 8px; }
+  .row > * { flex: 1; }
+
+  button { background: var(--panel-2); color: var(--ink);
+    border: 1px solid var(--rule); border-radius: 3px;
+    padding: 8px 14px; font: inherit; font-family: 'JetBrains Mono', monospace;
+    cursor: pointer; transition: all 0.15s; }
+  button:hover { border-color: var(--amber); color: var(--amber); }
+  button.primary { background: var(--amber); color: oklch(0.18 0.02 70);
+    border-color: var(--amber); font-weight: 500; }
+  button.primary:hover { color: oklch(0.18 0.02 70); filter: brightness(1.1); }
+  button.danger:hover { border-color: var(--red); color: var(--red); }
+
+  .frames { display: flex; flex-direction: column; gap: 10px; margin-top: 12px; }
+  .frame { background: var(--panel-2); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 10px;
+    display: grid; grid-template-columns: 80px 1fr auto; gap: 12px; align-items: start; }
+  .frame .thumb {
+    width: 80px; height: 80px; background: var(--bg);
+    border: 1px solid var(--rule); border-radius: 3px; overflow: hidden;
+    position: relative; display: flex; align-items: center; justify-content: center;
+    font-size: 9px; color: var(--ink-3); text-align: center;
+  }
+  .frame .thumb img { width: 100%; height: 100%; object-fit: cover; display: block; }
+  .frame .thumb.error { color: var(--red); border-color: var(--red); }
+  .frame .thumb.ok::after {
+    content: '✓'; position: absolute; top: 2px; right: 4px;
+    color: var(--green); font-size: 11px; font-weight: 600;
+  }
+  .frame .fields { display: grid; grid-template-columns: 1fr 1fr 1fr 1fr; gap: 6px; }
+  .frame .fields input { font-size: 12px; padding: 5px 7px; }
+  .frame .actions { display: flex; flex-direction: column; gap: 4px; }
+  .frame .actions button { padding: 4px 8px; font-size: 11px; }
+  .frame .url-row { grid-column: 1 / -1; font-size: 11px; color: var(--ink-3);
+    word-break: break-all; padding: 4px 0 0; border-top: 1px dashed var(--rule); margin-top: 4px; }
+  .frame .url-row code { color: var(--ink-2); font-size: 11px; }
+
+  .output { background: oklch(0.10 0.01 60); border: 1px solid var(--rule);
+    border-radius: 4px; padding: 16px; margin-top: 16px;
+    font-size: 12px; line-height: 1.6; color: var(--ink-2);
+    white-space: pre-wrap; max-height: 500px; overflow: auto; }
+  .output .keyword { color: oklch(0.78 0.13 250); }
+  .output .string { color: oklch(0.78 0.13 145); }
+  .output .key { color: var(--amber); }
+
+  .help { font-size: 11px; color: var(--ink-3); margin-top: 6px; line-height: 1.55; }
+  .help code { background: var(--bg); padding: 1px 5px; border-radius: 2px; color: var(--ink-2); }
+
+  .badge { display: inline-block; font-size: 10px; padding: 1px 6px; border-radius: 2px;
+    background: var(--panel-2); color: var(--ink-2); margin-left: 6px;
+    text-transform: uppercase; letter-spacing: 0.08em; }
+
+  .toolbar { position: sticky; bottom: 0; background: var(--bg);
+    padding: 12px 0; margin-top: 16px; border-top: 1px solid var(--rule);
+    display: flex; gap: 8px; justify-content: flex-end; }
+
+  .empty { text-align: center; color: var(--ink-3); font-style: italic;
+    padding: 32px; border: 1px dashed var(--rule); border-radius: 4px; }
+
+  .hint { background: oklch(0.22 0.04 70 / 0.3); border-left: 2px solid var(--amber);
+    padding: 8px 12px; margin: 12px 0; font-size: 11px; color: var(--ink-2);
+    line-height: 1.6; }
+  .hint strong { color: var(--amber); font-weight: 500; }
+
+  .mono-list { background: var(--bg); padding: 10px; border-radius: 3px;
+    border: 1px solid var(--rule); font-size: 11px; color: var(--ink-3);
+    max-height: 180px; overflow: auto; }
+  .mono-list li { list-style: none; padding: 2px 0; }
+  ul { margin: 0; padding: 0; }
+
+  ::selection { background: var(--amber); color: oklch(0.18 0.02 70); }
+</style>
+</head>
+<body>
+
+<h1>photo-import <em style="color:var(--amber);font-style:normal">·</em> nas → data.jsx</h1>
+<p class="sub">paste chevereto urls → fill captions → copy snippet → paste into <em>src/data.jsx</em></p>
+
+<div class="grid">
+
+  <!-- LEFT: settings + bulk paste -->
+  <div>
+    <div class="panel">
+      <h2>① Album metadata</h2>
+
+      <label>Month ID <span class="badge">e.g. 2026-04</span></label>
+      <input id="monthId" placeholder="2026-04" value="2026-04">
+
+      <label>City ID <span class="badge">snake-kebab</span></label>
+      <input id="cityId" placeholder="vienna-2026-04" value="vienna-2026-04">
+
+      <div class="row" style="margin-top: 0">
+        <div>
+          <label>Title</label>
+          <input id="title" placeholder="Vienna" value="Vienna">
+        </div>
+        <div>
+          <label>Sub</label>
+          <input id="sub" placeholder="Wien" value="Wien">
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label>Country code</label>
+          <input id="country" placeholder="AT" value="AT" maxlength="2">
+        </div>
+        <div>
+          <label>When</label>
+          <input id="when" placeholder="2026.04" value="2026.04">
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>② NAS base URL</h2>
+      <label>Chevereto image folder <span class="badge">no trailing slash needed</span></label>
+      <input id="baseUrl" placeholder="http://www.zgjnas.top:8111/images/2024/07/27"
+        value="http://www.zgjnas.top:8111/images/2024/07/27">
+      <div class="help">
+        every filename below will be appended to this base.<br>
+        if you have a separate <code>thumb base</code> (e.g. Chevereto's <code>.md.</code> variant),
+        toggle below.
+      </div>
+
+      <label style="display:flex;align-items:center;gap:8px;cursor:pointer">
+        <input type="checkbox" id="useThumb" style="width:auto" checked>
+        <span style="text-transform:none;letter-spacing:0;color:var(--ink-2);font-size:12px">
+          generate thumbnail URL too
+        </span>
+      </label>
+
+      <div id="thumbBlock" style="margin-top:8px">
+        <label>Thumb URL pattern</label>
+        <select id="thumbPattern">
+          <option value=".md.">Chevereto medium · file.md.ext</option>
+          <option value=".th.">Chevereto thumb · file.th.ext</option>
+          <option value="custom">custom (edit below)</option>
+        </select>
+        <div class="help" style="margin-top:6px">
+          Chevereto auto-generates <code>foo.md.jpg</code> (medium ~500px)
+          and <code>foo.th.jpg</code> (thumb ~150px) next to <code>foo.jpg</code>.
+        </div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>③ Paste filenames</h2>
+      <label>One per line <span class="badge">just the filename, .ext included</span></label>
+      <textarea id="bulkInput" rows="8" placeholder="agy6.jpg
+agy7.jpg
+abc1.jpg
+
+— or paste a wall of Chevereto embed codes / HTML / BBCode / direct URLs —
+the tool extracts all image URLs automatically."></textarea>
+
+      <div class="row" style="margin-top: 12px">
+        <button onclick="addFilenames()" class="primary">→ add to list</button>
+        <button onclick="parseChevereto()">🪄 smart-parse</button>
+        <button onclick="clearAll()" class="danger">clear all</button>
+      </div>
+
+      <div class="hint">
+        <strong>smart-parse:</strong> paste any messy blob — Chevereto
+        BBCode, HTML embed codes, markdown links, raw URLs mixed with text.
+        the tool will pull out every image URL it can find.
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>④ Story / blurb</h2>
+      <label>Story (the handwritten quote on album page)</label>
+      <textarea id="story" rows="3" placeholder="Schönbrunn 下雨，Café Central 暖得不想走..."></textarea>
+
+      <label>Blurb (short month tagline)</label>
+      <input id="blurb" placeholder="樱花、雨、两个城市。">
+
+      <div class="row">
+        <div>
+          <label>lat</label>
+          <input id="lat" placeholder="48.21" value="48.21">
+        </div>
+        <div>
+          <label>lon</label>
+          <input id="lon" placeholder="16.37" value="16.37">
+        </div>
+        <div>
+          <label>cover seed</label>
+          <input id="coverSeed" placeholder="11" value="11" type="number">
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- RIGHT: frames + output -->
+  <div>
+    <div class="panel">
+      <h2>Frames <span id="frameCount" class="badge">0</span></h2>
+      <div id="frames" class="frames">
+        <div class="empty">no frames yet · paste filenames on the left</div>
+      </div>
+    </div>
+
+    <div class="panel">
+      <h2>Output · paste into <code style="color:var(--amber)">src/data.jsx</code></h2>
+      <div style="display:flex;gap:8px;margin-bottom:8px">
+        <button onclick="copyOutput()" class="primary">📋 copy code</button>
+        <button onclick="downloadJson()">💾 download JSON</button>
+        <button onclick="loadJson()">📂 load JSON</button>
+        <input type="file" id="fileLoader" accept=".json" style="display:none">
+      </div>
+      <pre class="output" id="output"></pre>
+    </div>
+  </div>
+
+</div>
+
+<script>
+let frames = [];
+
+const $ = id => document.getElementById(id);
+
+function addFilenames() {
+  const baseUrl = $('baseUrl').value.replace(/\/+$/, '');
+  const lines = $('bulkInput').value.split('\n').map(s => s.trim()).filter(Boolean);
+
+  for (const line of lines) {
+    let filename = line;
+    // if user pasted a full URL, strip base
+    if (line.startsWith('http')) {
+      const u = new URL(line);
+      filename = u.pathname.split('/').pop();
+    }
+    if (!filename) continue;
+
+    frames.push({
+      filename,
+      cap: '',
+      date: '',
+      meta: 'iPhone',
+    });
+  }
+
+  $('bulkInput').value = '';
+  render();
+}
+
+// Smart-parse: pull every image URL out of an arbitrary blob (BBCode, HTML, markdown, raw)
+function parseChevereto() {
+  const blob = $('bulkInput').value;
+  if (!blob.trim()) { alert('paste something first'); return; }
+
+  // Match any http(s) URL ending with an image extension
+  const urlRe = /https?:\/\/[^\s"'<>\]\)\}]+\.(?:jpg|jpeg|png|gif|webp|bmp)/gi;
+  const found = [...new Set(blob.match(urlRe) || [])];
+
+  if (found.length === 0) {
+    alert('no image URLs detected in pasted text');
+    return;
+  }
+
+  // If a base URL is set, prefer URLs that match its host (so we don't accidentally
+  // import unrelated images that happened to be in the paste).
+  const baseHost = (() => {
+    try { return new URL($('baseUrl').value).host; } catch { return null; }
+  })();
+
+  // Filter out Chevereto thumbnail variants (.md.jpg / .th.jpg) — keep only originals
+  // so generated thumb URLs don't double-up.
+  const filtered = found.filter(u => {
+    if (baseHost) {
+      try { if (new URL(u).host !== baseHost) return false; } catch { return false; }
+    }
+    // skip Chevereto's auto-generated medium/thumb sizes
+    if (/\.(?:md|th)\.[a-z]+$/i.test(u)) return false;
+    return true;
+  });
+
+  if (filtered.length === 0) {
+    alert(`found ${found.length} URLs but none matched your NAS host or all were thumbnails. check the base URL.`);
+    return;
+  }
+
+  // Auto-set base URL from first URL's directory if base is empty
+  if (!$('baseUrl').value.trim()) {
+    try {
+      const u = new URL(filtered[0]);
+      const dir = u.origin + u.pathname.replace(/\/[^\/]*$/, '');
+      $('baseUrl').value = dir;
+    } catch {}
+  }
+
+  // Add as filenames (URLs will be reconstructed by makeUrl using current base)
+  let added = 0;
+  for (const url of filtered) {
+    try {
+      const filename = new URL(url).pathname.split('/').pop();
+      if (!filename) continue;
+      frames.push({ filename, cap: '', date: '', meta: 'iPhone' });
+      added++;
+    } catch {}
+  }
+
+  $('bulkInput').value = '';
+  render();
+  alert(`✓ extracted ${added} image URL${added === 1 ? '' : 's'} (${found.length - filtered.length} thumbnails/non-matches skipped)`);
+}
+
+function _addFilenamesOriginalUnused() {
+  // legacy: kept as no-op; actual implementation is above in addFilenames()
+}
+
+function makeUrl(filename) {
+  const base = $('baseUrl').value.replace(/\/+$/, '');
+  return base + '/' + filename;
+}
+
+function makeThumbUrl(filename) {
+  if (!$('useThumb').checked) return null;
+  const pattern = $('thumbPattern').value;
+  if (pattern === 'custom') return null;
+  const base = $('baseUrl').value.replace(/\/+$/, '');
+  // insert .md. or .th. before extension
+  const dot = filename.lastIndexOf('.');
+  if (dot < 0) return base + '/' + filename;
+  const stub = filename.slice(0, dot);
+  const ext = filename.slice(dot);
+  return base + '/' + stub + pattern + ext;
+}
+
+function render() {
+  $('frameCount').textContent = frames.length;
+  const out = $('frames');
+
+  if (frames.length === 0) {
+    out.innerHTML = '<div class="empty">no frames yet · paste filenames on the left</div>';
+    renderOutput();
+    return;
+  }
+
+  out.innerHTML = frames.map((f, i) => {
+    const url = makeUrl(f.filename);
+    const thumb = makeThumbUrl(f.filename);
+    return `
+      <div class="frame">
+        <div class="thumb" id="thumb-${i}" data-loaded="0">
+          <img src="${thumb || url}"
+               onload="markOk(${i})"
+               onerror="markErr(${i})"
+               alt="">
+        </div>
+        <div>
+          <div class="fields">
+            <input value="${esc(f.filename)}" onchange="frames[${i}].filename=this.value;render()" placeholder="filename">
+            <input value="${esc(f.cap)}" oninput="frames[${i}].cap=this.value;renderOutput()" placeholder="caption">
+            <input value="${esc(f.date)}" oninput="frames[${i}].date=this.value;renderOutput()" placeholder="MM.DD">
+            <input value="${esc(f.meta)}" oninput="frames[${i}].meta=this.value;renderOutput()" placeholder="camera · lens">
+          </div>
+          <div class="url-row">
+            <code>${esc(url)}</code>
+            ${thumb ? `<br><code style="color:var(--ink-3)">thumb: ${esc(thumb)}</code>` : ''}
+          </div>
+        </div>
+        <div class="actions">
+          <button onclick="moveFrame(${i}, -1)" ${i===0?'disabled':''}>↑</button>
+          <button onclick="moveFrame(${i}, 1)" ${i===frames.length-1?'disabled':''}>↓</button>
+          <button onclick="delFrame(${i})" class="danger">✕</button>
+        </div>
+      </div>
+    `;
+  }).join('');
+
+  renderOutput();
+}
+
+function markOk(i) {
+  const el = $(`thumb-${i}`);
+  if (el) el.classList.add('ok');
+}
+function markErr(i) {
+  const el = $(`thumb-${i}`);
+  if (el) {
+    el.classList.add('error');
+    el.querySelector('img').style.display = 'none';
+    el.innerHTML += '<div style="position:absolute">404</div>';
+  }
+}
+
+function moveFrame(i, dir) {
+  const j = i + dir;
+  if (j < 0 || j >= frames.length) return;
+  [frames[i], frames[j]] = [frames[j], frames[i]];
+  render();
+}
+
+function delFrame(i) {
+  frames.splice(i, 1);
+  render();
+}
+
+function clearAll() {
+  if (!confirm('clear all frames?')) return;
+  frames = [];
+  render();
+}
+
+function esc(s) {
+  return String(s ?? '').replace(/[&<>"]/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;'}[c]));
+}
+
+function jsStr(s) {
+  if (s == null || s === '') return "''";
+  return "'" + String(s).replace(/\\/g, '\\\\').replace(/'/g, "\\'") + "'";
+}
+
+function renderOutput() {
+  if (frames.length === 0) {
+    $('output').textContent = '// add some frames first';
+    return;
+  }
+
+  const cityId = $('cityId').value || 'unknown';
+  const title = $('title').value || 'Unknown';
+  const sub = $('sub').value || '';
+  const country = $('country').value || 'XX';
+  const when = $('when').value || '';
+  const lat = parseFloat($('lat').value) || 0;
+  const lon = parseFloat($('lon').value) || 0;
+  const coverSeed = parseInt($('coverSeed').value) || 1;
+  const story = $('story').value || '';
+
+  const framesCode = frames.map(f => {
+    const url = makeUrl(f.filename);
+    const thumb = makeThumbUrl(f.filename);
+    const parts = [
+      `cap: ${jsStr(f.cap)}`,
+      `date: ${jsStr(f.date)}`,
+      `meta: ${jsStr(f.meta)}`,
+      `src: ${jsStr(url)}`,
+    ];
+    if (thumb) parts.push(`thumb: ${jsStr(thumb)}`);
+    return `          { ${parts.join(', ')} },`;
+  }).join('\n');
+
+  const code = `      {
+        id: ${jsStr(cityId)}, title: ${jsStr(title)}, sub: ${jsStr(sub)}, when: ${jsStr(when)},
+        country: ${jsStr(country)}, countryName: ${jsStr(countryName(country))}, lat: ${lat}, lon: ${lon},
+        coverSeed: ${coverSeed}, frameCount: ${frames.length},
+        story: ${jsStr(story)},
+        frames: [
+${framesCode}
+        ],
+      },`;
+
+  $('output').textContent = code;
+}
+
+function countryName(code) {
+  const map = {
+    AT: 'Austria', GB: 'United Kingdom', CN: 'China', PT: 'Portugal',
+    IS: 'Iceland', JP: 'Japan', FR: 'France', DE: 'Germany', IT: 'Italy',
+    ES: 'Spain', NL: 'Netherlands', US: 'United States', TH: 'Thailand',
+    KR: 'South Korea', SG: 'Singapore', HK: 'Hong Kong', TW: 'Taiwan',
+    CH: 'Switzerland', BE: 'Belgium', GR: 'Greece', NO: 'Norway',
+    SE: 'Sweden', DK: 'Denmark', FI: 'Finland', IE: 'Ireland',
+    AU: 'Australia', NZ: 'New Zealand', CA: 'Canada', MX: 'Mexico',
+    BR: 'Brazil', AR: 'Argentina', VN: 'Vietnam', MY: 'Malaysia',
+    ID: 'Indonesia', PH: 'Philippines', IN: 'India', AE: 'UAE',
+    TR: 'Türkiye', RU: 'Russia',
+  };
+  return map[code] || code;
+}
+
+function copyOutput() {
+  navigator.clipboard.writeText($('output').textContent).then(() => {
+    const btn = event.target;
+    const orig = btn.textContent;
+    btn.textContent = '✓ copied';
+    setTimeout(() => btn.textContent = orig, 1500);
+  });
+}
+
+function downloadJson() {
+  const data = {
+    monthId: $('monthId').value,
+    cityId: $('cityId').value,
+    title: $('title').value,
+    sub: $('sub').value,
+    country: $('country').value,
+    when: $('when').value,
+    lat: $('lat').value,
+    lon: $('lon').value,
+    coverSeed: $('coverSeed').value,
+    blurb: $('blurb').value,
+    story: $('story').value,
+    baseUrl: $('baseUrl').value,
+    useThumb: $('useThumb').checked,
+    thumbPattern: $('thumbPattern').value,
+    frames,
+  };
+  const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = `${$('cityId').value || 'album'}.json`;
+  a.click();
+}
+
+function loadJson() {
+  $('fileLoader').click();
+}
+$('fileLoader').addEventListener('change', e => {
+  const f = e.target.files[0];
+  if (!f) return;
+  const reader = new FileReader();
+  reader.onload = () => {
+    try {
+      const d = JSON.parse(reader.result);
+      ['monthId','cityId','title','sub','country','when','lat','lon','coverSeed','blurb','story','baseUrl','thumbPattern']
+        .forEach(k => { if (d[k] != null) $(k).value = d[k]; });
+      if (typeof d.useThumb === 'boolean') $('useThumb').checked = d.useThumb;
+      if (Array.isArray(d.frames)) frames = d.frames;
+      render();
+    } catch (err) {
+      alert('Invalid JSON: ' + err.message);
+    }
+  };
+  reader.readAsText(f);
+});
+
+// re-render output when meta fields change
+['monthId','cityId','title','sub','country','when','lat','lon','coverSeed','story','baseUrl','useThumb','thumbPattern']
+  .forEach(id => {
+    const el = $(id);
+    el.addEventListener('input', () => render());
+    el.addEventListener('change', () => render());
+  });
+
+// localStorage autosave
+function save() {
+  const data = {
+    monthId: $('monthId').value, cityId: $('cityId').value, title: $('title').value,
+    sub: $('sub').value, country: $('country').value, when: $('when').value,
+    lat: $('lat').value, lon: $('lon').value, coverSeed: $('coverSeed').value,
+    blurb: $('blurb').value, story: $('story').value, baseUrl: $('baseUrl').value,
+    useThumb: $('useThumb').checked, thumbPattern: $('thumbPattern').value, frames,
+  };
+  localStorage.setItem('photo-import-state', JSON.stringify(data));
+}
+function restore() {
+  try {
+    const d = JSON.parse(localStorage.getItem('photo-import-state'));
+    if (!d) return;
+    ['monthId','cityId','title','sub','country','when','lat','lon','coverSeed','blurb','story','baseUrl','thumbPattern']
+      .forEach(k => { if (d[k] != null) $(k).value = d[k]; });
+    if (typeof d.useThumb === 'boolean') $('useThumb').checked = d.useThumb;
+    if (Array.isArray(d.frames)) frames = d.frames;
+  } catch {}
+}
+
+restore();
+render();
+setInterval(save, 2000);
+</script>
+
+</body>
+</html>

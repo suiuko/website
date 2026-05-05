@@ -249,83 +249,21 @@ today: [scratch]
 const MONTHS = [
   {
     id: '2026-04', label: 'April 2026', month: '2026.04',
-    blurb: '樱花、雨、两个城市。',
+    blurb: '海边的一周。',
     cities: [
       {
-        id: 'vienna-2026-04', title: 'Vienna', sub: 'Wien', when: '2026.04',
-        country: 'AT', countryName: 'Austria', lat: 48.21, lon: 16.37,
-        coverSeed: 11, frameCount: 12,
-        story: 'Schönbrunn 下雨，Café Central 暖得不想走。几天的咖啡量比一年都多。',
+        id: 'Brighton-2026-04', title: 'Brighton', sub: 'Brighton', when: '2026.04',
+        country: 'GB', countryName: 'United Kingdom', lat: 50.82, lon: -0.13,
+        coverSeed: 11, frameCount: 7,
+        story: '',
         frames: [
-          { cap: 'Schönbrunn', date: '04.12', meta: 'FUJI X100V · f/2' },
-          { cap: 'café central', date: '04.13', meta: 'PORTRA 400' },
-          { cap: 'tram 71', date: '04.14', meta: 'iPhone' },
-          { cap: 'Belvedere', date: '04.15', meta: 'FUJI · 23mm' },
-          { cap: 'sachertorte', date: '04.15', meta: 'iPhone' },
-        ],
-      },
-      {
-        id: 'london-2026-04', title: 'London', sub: '伦敦', when: '2026.04',
-        country: 'GB', countryName: 'United Kingdom', lat: 51.51, lon: -0.13,
-        coverSeed: 12, frameCount: 8,
-        story: '去看老朋友。Hyde Park 走了很久，在 Borough Market 吃了一个贵得离谱的 oyster。',
-        frames: [
-          { cap: 'Hyde Park', date: '04.22', meta: 'FUJI X100V' },
-          { cap: 'Borough', date: '04.23', meta: 'PORTRA 400' },
-          { cap: 'Tate Modern', date: '04.24', meta: 'iPhone' },
-          { cap: 'Soho 2am', date: '04.25', meta: 'CINESTILL 800T' },
-        ],
-      },
-    ],
-  },
-  {
-    id: '2026-03', label: 'March 2026', month: '2026.03',
-    blurb: '回国看爸妈，顺路西安。',
-    cities: [
-      {
-        id: 'xian-2026-03', title: 'Xi\'an', sub: '西安', when: '2026.03',
-        country: 'CN', countryName: 'China', lat: 34.34, lon: 108.94,
-        coverSeed: 5, frameCount: 9,
-        story: '城墙骑行，biangbiang 面吃了四顿。钟楼晚上亮灯的时候从南大街看过去，很像小时候的年。',
-        frames: [
-          { cap: '城墙日落', date: '03.14', meta: 'FUJI X100V' },
-          { cap: 'biangbiang', date: '03.15', meta: 'iPhone' },
-          { cap: '回民街', date: '03.16', meta: 'PORTRA 400' },
-          { cap: '钟楼', date: '03.17', meta: 'CINESTILL 800T' },
-        ],
-      },
-    ],
-  },
-  {
-    id: '2025-10', label: 'October 2025', month: '2025.10',
-    blurb: '伊比利亚半岛的秋天。',
-    cities: [
-      {
-        id: 'lisbon-2025-10', title: 'Lisbon', sub: 'Lisboa', when: '2025.10',
-        country: 'PT', countryName: 'Portugal', lat: 38.72, lon: -9.14,
-        coverSeed: 7, frameCount: 8,
-        story: '28 路电车从头坐到尾。丁香鱼罐头 + Vinho Verde 是晚餐标配。',
-        frames: [
-          { cap: '28 tram', date: '10.11', meta: 'PORTRA 400' },
-          { cap: 'sardinha', date: '10.12', meta: 'iPhone' },
-          { cap: 'azulejos', date: '10.13', meta: 'FUJI' },
-        ],
-      },
-    ],
-  },
-  {
-    id: '2025-08', label: 'August 2025', month: '2025.08',
-    blurb: 'Midnight sun, 北大西洋。',
-    cities: [
-      {
-        id: 'reykjavik-2025-08', title: 'Reykjavik', sub: 'Ísland', when: '2025.08',
-        country: 'IS', countryName: 'Iceland', lat: 64.15, lon: -21.94,
-        coverSeed: 9, frameCount: 14,
-        story: 'Midnight sun 没带眼罩。开一辆小车绕了半个岛，一路上没有人。',
-        frames: [
-          { cap: 'midnight road', date: '08.02', meta: 'FUJI X100V' },
-          { cap: 'black sand', date: '08.04', meta: 'PORTRA 400' },
-          { cap: 'horses', date: '08.05', meta: 'iPhone' },
+          { cap: 'live', date: '',      meta: 'iPhone',         src: 'http://www.zgjnas.top:8111/images/2026/05/02/aFoV.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/aFoV.th.jpg' },
+          { cap: 'live', date: '04.23', meta: 'PORTRA 400',     src: 'http://www.zgjnas.top:8111/images/2026/05/02/aP41.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/aP41.th.jpg' },
+          { cap: 'live', date: '04.24', meta: 'iPhone',         src: 'http://www.zgjnas.top:8111/images/2026/05/02/ahuQ.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/ahuQ.th.jpg' },
+          { cap: 'live', date: '04.25', meta: 'CINESTILL 800T', src: 'http://www.zgjnas.top:8111/images/2026/05/02/avr3.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/avr3.th.jpg' },
+          { cap: 'live', date: '',      meta: 'iPhone',         src: 'http://www.zgjnas.top:8111/images/2026/05/02/a3Ga.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/a3Ga.th.jpg' },
+          { cap: 'live', date: '04.23', meta: 'PORTRA 400',     src: 'http://www.zgjnas.top:8111/images/2026/05/02/aHBo.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/aHBo.th.jpg' },
+          { cap: 'live', date: '',      meta: 'iPhone',         src: 'http://www.zgjnas.top:8111/images/2026/05/02/aTIP.jpg', thumb: 'http://www.zgjnas.top:8111/images/2026/05/02/aTIP.th.jpg' },
         ],
       },
     ],
@@ -341,6 +279,7 @@ const PHOTOS = ALBUMS.flatMap((a, ai) =>
     id: ai * 100 + fi + 1,
     caption: f.cap, date: a.when + '.' + (f.date.split('.')[1] || '01'), loc: a.title,
     label: f.meta, albumId: a.id, seed: ai * 10 + fi,
+    src: f.src || '', thumb: f.thumb || '',
   }))
 );
 
@@ -452,15 +391,15 @@ const TRIPS = [
 const ABOUT = {
   name: 'Gaojing Zhang',
   cn: '张高靖',
-  role: 'PhD Student · Machine Learning',
-  where: 'Cambridge, UK',
-  email: 'gaojing [at] example [dot] edu',
-  github: 'github.com/gaojing',
-  scholar: 'scholar.google/…',
+  role: '机器人',
+  where: 'Brighton, UK',
+  email: 'suiukoer[at]gmail[at]com',
+  github: 'github.com/suiuko',
+  scholar: 'https://scholar.google.com/citations?user=vq9Nz9UAAAAJ&hl=zh-CN',
   rss: '/feed.xml',
   pgp: 'F2A3 ··· 9E17',
   tz: 'Europe/London · UTC+0',
-  status: '👉 writing a NeurIPS submission',
+  status: '👉 writing a RAL submission',
 };
 
 // expose

@@ -14,7 +14,7 @@ const CITIES = [
   { code: 'SIN', city: 'Singapore', country: 'SG', x: 810, y: 305, visited: true },
   { code: 'LIS', city: 'Lisbon',    country: 'PT', x: 440, y: 200, visited: true, albumId: 'lisbon-2025-10' },
   { code: 'KEF', city: 'Reykjavik', country: 'IS', x: 475, y: 118, visited: true, albumId: 'reykjavik-2025-08' },
-  { code: 'LHR', city: 'London',    country: 'GB', x: 500, y: 170, visited: true, albumId: 'cambridge-home' },
+  { code: 'BHX', city: 'Brighton',  country: 'GB', x: 500, y: 172, visited: true, albumId: 'Brighton-2026-04' },
   { code: 'CDG', city: 'Paris',     country: 'FR', x: 515, y: 180, visited: true },
   { code: 'FRA', city: 'Frankfurt', country: 'DE', x: 540, y: 172, visited: true },
   { code: 'FCO', city: 'Rome',      country: 'IT', x: 550, y: 210, visited: true },
